@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" style="--font-ar: &quot;Eight&quot;,sans-serif; --font-en: &quot;Georgia&quot;,sans-serif;"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101820">
+<title>RE:ACT — قانون نيوتن الثالث</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#101820;
+  --mint:#B8F2E6;
+  --coral:#FF6B5A;
+  --font-ar:"Eight","IBM Plex Sans Arabic",sans-serif;
+  --font-en:"Space Grotesk",sans-serif;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --duration:.72s;
+  --stage-bg:var(--navy);
+  --slide-bg:var(--navy);
+  --ink:var(--mint);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:var(--font-ar);color:var(--mint);background:var(--navy)}
+body{user-select:none}
+button,a{font:inherit}
+button{color:inherit}
+a{color:var(--mint);text-decoration:none}
+a:hover{color:var(--coral)}
+/* ===========================================
+   FIXED 16:9 STAGE: MANDATORY BASE STYLES
+   Included from Frontend Slides viewport-base.css
+   Slides are authored at 1920×1080 and scaled as a whole.
+   =========================================== */
+
+/* 1. Lock the browser viewport */
+html,
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    background: var(--stage-bg, #000);
+}
+/* 2. Full-window deck viewport */
+.deck-viewport {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    background: var(--stage-bg, #000);
+}
+
+/* 3. Fixed 16:9 design canvas.
+   JavaScript sets transform: translate(...) scale(...). */
+.deck-stage {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    transform-origin: 0 0;
+    background: var(--slide-bg, #fff);
+}
+/* 4. Slides stack inside the fixed stage.
+   Content must be laid out at 1920×1080, not reflowed per device. */
+.slide {
+    position: absolute;
+    inset: 0;
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    display: block;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    background: var(--slide-bg, #fff);
+    transition:opacity .5s ease,visibility .5s;
+}
+
+.slide.active,
+.slide.visible {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 1;
+}
+/* 5. Keep media inside authored slide bounds */
+img,
+video,
+canvas,
+svg {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+/* 6. Presentation chrome stays outside the slide design system */
+.deck-controls {
+    position: fixed;
+    left: 50%;
+    bottom: 22px;
+    transform: translateX(-50%);
+    z-index: 1000;
+}
+
+/* 7. Print one fixed-size slide per page */
+@media print {
+    html,
+    body {
+        width: 1920px;
+        height: auto;
+        overflow: visible;
+        background: #fff;
+    }
+    .deck-viewport {
+        position: static;
+        overflow: visible;
+        background: #fff;
+    }
+
+    .deck-stage {
+        position: static;
+        width: auto;
+        height: auto;
+        transform: none !important;
+        background: none;
+    }
+    .slide {
+        position: relative;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        width: 1920px;
+        height: 1080px;
+        break-after: page;
+        page-break-after: always;
+    }
+
+    .slide:last-child {
+        break-after: auto;
+        page-break-after: auto;
+    }
+
+    .deck-controls {
+        display: none !important;
+    }
+}
+/* 8. Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.2s !important;
+    }
+}
+
+/* ===========================================
+   RE:ACT DESIGN SYSTEM — exactly three colors
+   =========================================== */
+:root{--bg:var(--navy);--fg:var(--mint);--accent:var(--coral)}
+.slide{background:var(--bg)}
+.stage-grid{
+ position:absolute;inset:0;opacity:.13;pointer-events:none;
+ background-image:linear-gradient(to right,rgba(184,242,230,.16) 1px,transparent 1px),linear-gradient(to bottom,rgba(184,242,230,.16) 1px,transparent 1px);
+ background-size:120px 120px;
+ mask-image:linear-gradient(90deg,transparent,black 18%,black 82%,transparent);
+}
+.noise{position:absolute;inset:0;pointer-events:none;opacity:.07;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E")}
+.frame{position:absolute;inset:72px 88px;border:1px solid rgba(184,242,230,.18);pointer-events:none}
+.kicker{font:600 20px var(--font-en);letter-spacing:.22em;color:var(--coral);text-transform:uppercase}
+.eyebrow{font:500 19px var(--font-en);letter-spacing:.18em;color:var(--mint);opacity:.68}
+.headline{font-size:90px;line-height:1.18;font-weight:700;letter-spacing:-.045em}
+.subline{font-size:34px;line-height:1.65;font-weight:400;opacity:.82}
+.en{font-family:var(--font-en);direction:ltr;unicode-bidi:isolate}
+.ar{font-family:var(--font-ar)}
+.mint{color:var(--mint)} .coral{color:var(--coral)}
+.rule{height:2px;background:var(--mint);opacity:.35}
+.slide-no{position:absolute;left:92px;bottom:76px;font:600 18px var(--font-en);letter-spacing:.16em;opacity:.52}
+.brand{position:absolute;right:92px;top:72px;font:700 24px var(--font-en);letter-spacing:.16em}
+.reveal{opacity:0;transform:translateY(28px);transition:opacity var(--duration) var(--ease),transform var(--duration) var(--ease)}
+.slide.visible .reveal{opacity:1;transform:translateY(0)}
+.slide.visible .d1{transition-delay:.12s}.slide.visible .d2{transition-delay:.24s}.slide.visible .d3{transition-delay:.36s}.slide.visible .d4{transition-delay:.48s}
+.svg-line{fill:none;stroke:var(--mint);stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+.svg-coral{fill:none;stroke:var(--coral);stroke-width:7;stroke-linecap:round;stroke-linejoin:round}
+.vector{stroke:var(--coral);stroke-width:9;stroke-linecap:round;fill:none}
+.vector-head{fill:var(--coral)}
+.force-label{font:600 22px var(--font-en);fill:var(--coral);letter-spacing:.06em}
+.object-label{font:600 23px var(--font-ar);fill:var(--mint)}
+.micro{font-size:20px;opacity:.65}
+/* ===========================================
+   SCENE 01 — OPENING: THE JUMP
+   =========================================== */
+.opening-title{position:absolute;right:128px;top:190px;width:760px}
+.opening-title .headline{font-size:112px}
+.opening-title .question{margin-top:36px;font-size:35px;line-height:1.65;max-width:700px}
+.opening-art{position:absolute;left:120px;top:140px;width:850px;height:730px}
+.opening-art .ground{position:absolute;left:0;right:0;bottom:125px;height:4px;background:var(--mint);opacity:.7}
+.opening-art .person{position:absolute;left:365px;bottom:130px;width:130px;height:400px}
+.person-head{position:absolute;top:0;left:39px;width:54px;height:54px;border:6px solid var(--mint);border-radius:50%}
+.person-body{position:absolute;top:66px;left:58px;width:13px;height:190px;background:var(--mint);transform:rotate(7deg);transform-origin:top}
+.person-arm{position:absolute;top:90px;left:58px;width:110px;height:12px;background:var(--mint);transform:rotate(-32deg);transform-origin:left}
+.person-leg{position:absolute;top:245px;left:62px;width:13px;height:155px;background:var(--mint);transform-origin:top;border-radius:9px}
+.person-leg.one{transform:rotate(24deg)}.person-leg.two{transform:rotate(-28deg)}
+.jump-shadow{position:absolute;left:300px;bottom:100px;width:260px;height:22px;border:2px solid var(--mint);border-radius:50%;opacity:.5}
+.jump-arc{position:absolute;left:255px;top:35px;width:390px;height:520px;border:2px dashed rgba(184,242,230,.35);border-bottom:0;border-left-color:transparent;border-right-color:transparent;border-radius:50% 50% 0 0;transform:rotate(-5deg)}
+.ground-force{position:absolute;left:425px;bottom:160px;height:150px;border-left:7px solid var(--coral);transform:rotate(180deg)}
+.ground-force:before{content:"";position:absolute;top:-2px;left:-18px;border-left:15px solid transparent;border-right:15px solid transparent;border-bottom:24px solid var(--coral)}
+.person-force{position:absolute;left:520px;bottom:230px;height:165px;border-left:7px solid var(--coral)}
+.person-force:before{content:"";position:absolute;top:-2px;left:-18px;border-left:15px solid transparent;border-right:15px solid transparent;border-bottom:24px solid var(--coral)}
+.force-caption{position:absolute;font:600 19px var(--font-en);color:var(--coral)}
+/* ===========================================
+   SCENE 02 — THE LAW
+   =========================================== */
+.law-layout{position:absolute;inset:190px 150px 140px;display:grid;grid-template-columns:1fr 660px;gap:100px;align-items:center}
+.law-quote{font-size:65px;line-height:1.65;font-weight:600;max-width:980px}
+.law-quote .accent-line{color:var(--coral)}
+.law-diagram{position:relative;height:560px;border-left:1px solid rgba(184,242,230,.22);display:flex;align-items:center;justify-content:center}
+.law-body{position:absolute;width:190px;height:190px;border:4px solid var(--mint);border-radius:50%;display:grid;place-items:center;font:700 25px var(--font-en)}
+.law-body.a{left:75px;top:95px}.law-body.b{right:75px;bottom:95px}
+.law-arrow{position:absolute;height:7px;background:var(--coral);width:190px}
+.law-arrow:after{content:"";position:absolute;right:-2px;top:-13px;border-top:16px solid transparent;border-bottom:16px solid transparent;border-left:24px solid var(--coral)}
+.law-arrow.one{left:230px;top:245px;transform:rotate(35deg)}
+.law-arrow.two{right:230px;bottom:245px;transform:rotate(215deg)}
+.law-caption{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);font-size:23px;white-space:nowrap}
+/* ===========================================
+   SCENE 03 — DIFFERENT BODIES
+   =========================================== */
+.principle{position:absolute;inset:180px 150px 140px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+.principle .headline{font-size:104px;max-width:1400px}
+.principle .split{display:flex;gap:34px;align-items:center;margin-top:70px;font:600 27px var(--font-en);direction:ltr}
+.principle .split span{padding:20px 34px;border-bottom:3px solid var(--mint)}
+.principle .not-equal{font:400 70px var(--font-en);color:var(--coral)}
+/* ===========================================
+   SCENE 04 — WALL AND HAND
+   =========================================== */
+.wall-layout{position:absolute;inset:175px 150px 130px;display:grid;grid-template-columns:700px 1fr;gap:90px;align-items:center}
+.wall-art{height:600px;position:relative;border-right:2px solid rgba(184,242,230,.25)}
+.wall-block{position:absolute;right:65px;top:85px;width:210px;height:410px;border:4px solid var(--mint);background:repeating-linear-gradient(0deg,transparent 0 58px,rgba(184,242,230,.25) 59px 61px)}
+.hand{position:absolute;left:60px;top:250px;width:340px;height:90px;border:5px solid var(--mint);border-right:0;border-radius:60px 0 0 60px;transform:rotate(-7deg)}
+.hand:before{content:"";position:absolute;right:-25px;top:15px;width:70px;height:55px;border:5px solid var(--mint);border-left:0;border-radius:0 24px 24px 0}
+.wall-arrow-a{position:absolute;left:205px;top:190px;width:180px;height:7px;background:var(--coral)}
+.wall-arrow-a:after{content:"";position:absolute;right:-1px;top:-12px;border-top:15px solid transparent;border-bottom:15px solid transparent;border-left:24px solid var(--coral)}
+.wall-arrow-b{position:absolute;left:185px;top:390px;width:180px;height:7px;background:var(--coral);transform:rotate(180deg)}
+.wall-arrow-b:after{content:"";position:absolute;right:-1px;top:-12px;border-top:15px solid transparent;border-bottom:15px solid transparent;border-left:24px solid var(--coral)}
+.wall-copy .headline{font-size:82px}
+.wall-copy .subline{margin-top:34px;max-width:850px}
+.force-pair{display:flex;gap:70px;margin-top:45px}
+.force-pair div{font:600 22px var(--font-en);color:var(--coral)}
+/* ===========================================
+   SCENE 05 — MUTUAL GRAVITY
+   =========================================== */
+.gravity-layout{position:absolute;inset:160px 130px 120px}
+.gravity-head{position:absolute;right:30px;top:20px;width:650px}
+.gravity-head .headline{font-size:78px}
+.gravity-svg{position:absolute;left:0;top:65px;width:1150px;height:760px}
+.gravity-note{position:absolute;right:30px;bottom:105px;width:610px;font-size:30px;line-height:1.7}
+.gravity-note strong{color:var(--coral)}
+/* ===========================================
+   SCENE 06 — FORCE VS ACCELERATION
+   =========================================== */
+.accel-layout{position:absolute;inset:170px 145px 140px;display:grid;grid-template-columns:1fr 1fr;gap:90px;align-items:center}
+.equation{font:600 130px var(--font-en);direction:ltr;text-align:center;letter-spacing:-.05em}
+.equation .frac{display:inline-flex;flex-direction:column;vertical-align:middle;align-items:center;font-size:90px;line-height:1.1;margin-left:15px}
+.equation .frac i{font-style:normal;padding:0 25px}
+.equation .frac i:first-child{border-bottom:5px solid var(--mint)}
+.accel-copy .headline{font-size:76px}
+.accel-copy .subline{margin-top:30px}
+.mass-compare{display:flex;align-items:end;gap:75px;margin-top:65px;height:260px}
+.mass-item{display:flex;flex-direction:column;align-items:center;gap:20px;font-size:22px}
+.mass-ball{width:65px;height:65px;border:4px solid var(--mint);border-radius:50%}
+.mass-earth{width:210px;height:210px;border:5px solid var(--mint);border-radius:50%;position:relative;overflow:hidden}
+.mass-earth:before,.mass-earth:after{content:"";position:absolute;border:3px solid var(--mint);border-radius:50%;width:260px;height:110px;left:-30px;top:45px;transform:rotate(35deg)}
+.mass-earth:after{transform:rotate(-35deg)}
+/* ===========================================
+   SCENE 07 — THE TINY RECOIL
+   =========================================== */
+.motion-layout{position:absolute;inset:170px 140px 135px;display:grid;grid-template-columns:1fr 1fr;gap:100px;align-items:center}
+.motion-layout .headline{font-size:86px}
+.motion-track{position:relative;height:430px;border-bottom:3px solid rgba(184,242,230,.55)}
+.earth-mini{position:absolute;left:125px;bottom:4px;width:270px;height:270px;border:5px solid var(--mint);border-radius:50%;display:grid;place-items:center;font:600 22px var(--font-en)}
+.ball-mini{position:absolute;right:145px;bottom:305px;width:48px;height:48px;border:4px solid var(--mint);border-radius:50%}
+.tiny-motion{position:absolute;left:65px;bottom:145px;width:65px;height:5px;background:var(--coral)}
+.tiny-motion:after{content:"";position:absolute;left:-2px;top:-10px;border-top:12px solid transparent;border-bottom:12px solid transparent;border-right:18px solid var(--coral)}
+.ball-motion{position:absolute;right:85px;bottom:390px;width:125px;height:5px;background:var(--coral)}
+.ball-motion:after{content:"";position:absolute;left:-2px;top:-10px;border-top:12px solid transparent;border-bottom:12px solid transparent;border-right:18px solid var(--coral)}
+.motion-caption{position:absolute;bottom:-65px;left:50%;transform:translateX(-50%);font-size:19px;white-space:nowrap;opacity:.62}
+/* ===========================================
+   SCENE 08 — RETURN TO THE JUMP
+   =========================================== */
+.return-layout{position:absolute;inset:160px 140px 125px;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+.return-copy .headline{font-size:82px}
+.return-copy .subline{margin-top:30px}
+.jump-return{position:relative;height:650px}
+.return-ground{position:absolute;left:30px;right:30px;bottom:115px;height:4px;background:var(--mint)}
+.return-person{position:absolute;left:340px;bottom:120px;width:100px;height:330px}
+.return-person:before{content:"";position:absolute;left:23px;top:0;width:50px;height:50px;border:5px solid var(--mint);border-radius:50%}
+.return-person:after{content:"";position:absolute;left:43px;top:62px;width:13px;height:165px;background:var(--mint);box-shadow:-70px 90px 0 -2px var(--mint),65px 90px 0 -2px var(--mint)}
+.return-arc{position:absolute;left:180px;top:20px;width:430px;height:460px;border:2px dashed rgba(184,242,230,.35);border-bottom:0;border-radius:50% 50% 0 0}
+.big-question{position:absolute;bottom:0;right:0;left:0;text-align:center;font-size:34px;color:var(--coral)}
+/* ===========================================
+   SCENE 09 — CLOSING & SOURCES
+   =========================================== */
+.close-layout{position:absolute;inset:160px 140px 140px;display:grid;grid-template-columns:1fr 1fr;gap:100px;align-items:center}
+.close-thanks .headline{font-size:100px}
+.close-thanks .subline{margin-top:20px}
+.sources{border-right:1px solid rgba(184,242,230,.25);padding-right:80px}
+.sources h2{font-size:32px;margin-bottom:32px}
+.sources a{display:block;font:500 21px var(--font-en);direction:ltr;text-align:left;margin:0 0 25px;line-height:1.4;overflow-wrap:anywhere}
+.sources a:before{content:"↗";color:var(--coral);margin-right:14px}
+.source-label{font-size:20px;opacity:.68;margin-bottom:8px}
+
+/* ===========================================
+   PRESENTATION CHROME — outside the stage
+   =========================================== */
+.deck-controls{display:flex;align-items:center;gap:14px;padding:12px 18px;border:1px solid rgba(184,242,230,.2);background:rgba(16,24,32,.94);backdrop-filter:blur(12px);border-radius:4px}
+.ctrl-btn{width:42px;height:42px;border:1px solid rgba(184,242,230,.28);background:transparent;border-radius:2px;cursor:pointer;font:600 20px var(--font-en)}
+.ctrl-btn:hover{border-color:var(--coral);color:var(--coral)}
+.progress{width:160px;height:3px;background:rgba(184,242,230,.2);overflow:hidden}
+.progress-fill{height:100%;width:11.11%;background:var(--coral);transition:width .35s ease}
+.counter{font:600 15px var(--font-en);letter-spacing:.12em;min-width:54px;text-align:center}
+.hint{position:fixed;right:22px;bottom:20px;z-index:1000;font:12px var(--font-en);opacity:.45;direction:ltr}
+.notes-panel{position:fixed;z-index:2000;left:24px;top:24px;width:min(520px,calc(100vw - 48px));max-height:calc(100vh - 48px);overflow:auto;background:#101820;border:1px solid rgba(184,242,230,.55);padding:22px 24px;box-shadow:0 20px 80px rgba(0,0,0,.45);display:none;color:var(--mint);direction:rtl;user-select:text}
+.notes-panel.open{display:block}
+.notes-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.notes-head strong{font:600 14px var(--font-en);letter-spacing:.16em;color:var(--coral)}
+.notes-text{font-size:19px;line-height:1.9;white-space:pre-wrap}
+.notes-foot{font:12px var(--font-en);opacity:.55;margin-top:18px;direction:ltr}
+.edit-hotzone{position:fixed;top:0;left:0;width:90px;height:90px;z-index:3000}
+.edit-toggle{position:fixed;top:18px;left:18px;z-index:3001;opacity:0;pointer-events:none;transition:opacity .25s;background:var(--navy);border:1px solid rgba(184,242,230,.4);padding:10px 14px;cursor:pointer}
+.edit-toggle.show{opacity:1;pointer-events:auto}
+.editing [data-editable="true"]{outline:1px dashed var(--coral);outline-offset:5px;cursor:text;user-select:text}
+.edit-tools{position:fixed;top:18px;left:18px;z-index:3002;display:none;gap:8px}
+.editing .edit-tools{display:flex}
+.edit-tools button{background:var(--navy);border:1px solid var(--mint);padding:10px 14px;cursor:pointer}
+@media print{.notes-panel,.hint,.edit-hotzone,.edit-toggle,.edit-tools{display:none!important}}
+
+/* =========================================================
+   ADD-ON ONLY: RE:ACT DESIGN MODE
+   This block is intentionally isolated from the presentation styles.
+   ========================================================= */
+.design-launch{
+ position:fixed;right:24px;bottom:92px;z-index:3100;
+ border:1px solid rgba(184,242,230,.48);background:rgba(16,24,32,.96);
+ color:var(--mint);padding:12px 17px;border-radius:3px;
+ font:600 13px var(--font-en);letter-spacing:.12em;cursor:pointer;
+ box-shadow:0 8px 30px rgba(0,0,0,.22);transition:border-color .2s,color .2s,transform .2s;
+}
+.design-launch:hover,.design-mode .design-launch{border-color:var(--coral);color:var(--coral)}
+.design-launch:active{transform:scale(.97)}
+.design-panel{
+ display:none;position:fixed;z-index:4200;top:16px;right:16px;
+ width:min(350px,calc(100vw - 32px));max-height:calc(100vh - 32px);
+ overflow:auto;background:#101820;color:#B8F2E6;
+ border:1px solid rgba(184,242,230,.55);border-radius:5px;
+ padding:16px 17px 14px;direction:rtl;user-select:text;
+ box-shadow:0 18px 65px rgba(0,0,0,.48);
+ font-family:var(--font-ar);
+}
+.design-mode .design-panel{display:block}
+.design-panel *{box-sizing:border-box}
+.design-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.design-head strong{font:700 15px var(--font-en);letter-spacing:.13em;color:var(--mint)}
+.design-subtitle{font-size:11px;opacity:.62}
+.design-close{background:transparent;border:1px solid rgba(184,242,230,.35);color:var(--mint);width:30px;height:30px;cursor:pointer;font-size:18px}
+.design-status{border-right:3px solid var(--coral);background:rgba(184,242,230,.055);padding:9px 10px;margin-bottom:12px;font-size:12px;line-height:1.7;overflow-wrap:anywhere}
+.design-section{border-top:1px solid rgba(184,242,230,.18);padding-top:11px;margin-top:11px}
+.design-section-title{font-size:12px;font-weight:700;color:var(--coral);letter-spacing:.04em;margin-bottom:9px}
+.design-field{display:flex;flex-direction:column;gap:5px;margin:8px 0}
+.design-field label{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:11px;opacity:.9}
+.design-field output{font:600 11px var(--font-en);color:var(--mint);direction:ltr}
+.design-panel input[type="range"],.design-panel select{
+ width:100%;accent-color:var(--coral);
+}
+.design-panel select{
+ border:1px solid rgba(184,242,230,.34);background:#101820;color:#B8F2E6;
+ border-radius:3px;padding:8px 9px;font-size:12px;outline:none;
+}
+.design-panel input[type="range"]{cursor:pointer}
+.design-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.design-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.design-actions button{
+ border:1px solid rgba(184,242,230,.42);background:transparent;color:var(--mint);
+ padding:10px 8px;cursor:pointer;font-size:11px;font-weight:700;
+}
+.design-actions button.primary{background:var(--coral);border-color:var(--coral);color:#101820}
+.design-actions button:hover{border-color:var(--coral)}
+.design-help{font-size:10px;line-height:1.75;opacity:.58;margin-top:11px}
+.design-mode .slide.active .design-target{cursor:crosshair}
+.design-mode .slide.active .design-selected{
+ outline:2px dashed var(--coral)!important;outline-offset:4px!important;
+}
+.design-mode .slide.active svg .design-selected{
+ filter:drop-shadow(0 0 4px rgba(255,107,90,.9));
+}
+.design-font-controls[hidden],.design-text-controls[hidden]{display:none!important}
+@media(max-width:700px){
+ .design-panel{width:min(330px,calc(100vw - 20px));right:10px;top:10px;max-height:calc(100vh - 20px)}
+ .design-launch{right:12px;bottom:84px}
+}
+@media print{.design-panel,.design-launch{display:none!important}}
+
+</style>
+</head>
+<body class="design-mode">
+<div class="deck-viewport">
+<main class="deck-stage" id="deckStage" style="transform: translate(0px, 48px) scale(0.8);">
+
+<!-- ===========================================
+     SLIDE 01 — THE QUESTION THAT STARTS IT
+     =========================================== -->
+<section class="slide" data-scene="1">
+ <div class="stage-grid"></div><div class="noise"></div><div class="frame"></div>
+ <div class="brand en">RE:ACT</div>
+ <div class="opening-title">
+  <div class="kicker reveal design-target" data-dm-x="0" data-dm-y="-10" data-dm-scale="1" data-dm-rotate="0" style="translate: 0px -10px; scale: 1; rotate: 0deg;">01 / THE INTERACTION</div>
+  <h1 class="headline reveal d1 design-target" data-editable="true" contenteditable="false" data-dm-x="0" data-dm-y="0" data-dm-scale="1" data-dm-rotate="0" style="font-family: &quot;IBM Plex Sans Arabic&quot;, sans-serif; font-size: 112px; line-height: 1.2; letter-spacing: -0.045em;">أنت تقفز.<br><span class="coral">والأرض تدفعك.</span></h1>
+  <p class="question reveal d2 design-target" data-editable="true" contenteditable="false" data-dm-x="0" data-dm-y="0" data-dm-scale="1" data-dm-rotate="0">لكن… هل تتحرك الأرض أيضاً؟</p>
+  <div class="rule reveal d3" style="width:180px;margin-top:38px"></div>
+  <p class="eyebrow en reveal d4" style="margin-top:22px">EVERY ACTION HAS A REACTION.</p>
+ </div>
+ <div class="opening-art">
+  <div class="jump-arc design-target" data-dm-x="0" data-dm-y="0" data-dm-scale="1" data-dm-rotate="0"></div><div class="ground"></div><div class="jump-shadow"></div>
+  <div class="person design-target" data-dm-x="0" data-dm-y="0" data-dm-scale="1" data-dm-rotate="0" style="translate: 0px; scale: 1; rotate: 0deg;"><div class="person-head design-target" data-dm-x="0" data-dm-y="0" data-dm-scale="1.3" data-dm-rotate="0" style="translate: 0px; scale: 1.3; rotate: 0deg;"></div><div class="person-body design-target" data-dm-x="4" data-dm-y="-8" data-dm-scale="1.1" data-dm-rotate="-7" style="translate: 4px -8px; scale: 1.1; rotate: -7deg;"></div><div class="person-arm design-target" data-dm-x="6" data-dm-y="42" data-dm-scale="1" data-dm-rotate="-16" style="translate: 6px 42px; scale: 1; rotate: -16deg;"></div><div class="person-leg one design-target" data-dm-x="0" data-dm-y="0" data-dm-scale="1" data-dm-rotate="0" style="translate: 0px; scale: 1; rotate: 0deg;"></div><div class="person-leg two design-target" data-dm-x="0" data-dm-y="0" data-dm-scale="1" data-dm-rotate="0"></div></div>
+  <div class="ground-force design-target" data-dm-x="-88" data-dm-y="0" data-dm-scale="1" data-dm-rotate="0" style="translate: -88px; scale: 1; rotate: 0deg;"></div><div class="person-force design-target" data-dm-x="48" data-dm-y="0" data-dm-scale="1" data-dm-rotate="0" style="translate: 48px; scale: 1; rotate: 0deg;"></div>
+  <div class="force-caption design-target" style="left: 350px; bottom: 320px; font-family: Georgia, sans-serif; font-size: 25px; line-height: 1.2; letter-spacing: 0em; translate: -26px -44px; scale: 1; rotate: 0deg;" data-dm-x="-26" data-dm-y="-44" data-dm-scale="1" data-dm-rotate="0">↓ F</div>
+  <div class="force-caption design-target" style="left: 555px; bottom: 150px; font-family: Georgia, sans-serif; font-size: 25px; line-height: 1.2; letter-spacing: 0em;" data-dm-x="0" data-dm-y="0" data-dm-scale="1" data-dm-rotate="0">↑ F</div>
+ </div>
+ <div class="slide-no">01 — 09</div>
+</section>
+
+<!-- ===========================================
+     SLIDE 02 — NEWTON'S THIRD LAW
+     =========================================== -->
+<section class="slide" data-scene="2">
+ <div class="stage-grid"></div><div class="frame"></div><div class="brand en">RE:ACT</div>
+ <div class="kicker" style="position:absolute;right:130px;top:165px">02 / NEWTON'S THIRD LAW</div>
+ <div class="law-layout">
+  <div>
+   <p class="eyebrow reveal">القانون الثالث للحركة</p>
+   <h1 class="law-quote reveal d1" data-editable="true" contenteditable="false">لكل قوةٍ<br>قوةٌ <span class="accent-line">مساوية</span><br>لها بالمقدار،<br><span class="accent-line">ومعاكسة</span> بالاتجاه.</h1>
+   <p class="subline reveal d2" style="font-size:27px;margin-top:25px">تحدث القوتان معاً، وكل واحدة تؤثر في جسم مختلف.</p>
+  </div>
+  <div class="law-diagram">
+   <div class="law-body a en">BODY A</div><div class="law-body b en">BODY B</div>
+   <div class="law-arrow one"></div><div class="law-arrow two"></div>
+   <div class="law-caption">تفاعل متبادل — قوتان، جسمان</div>
+  </div>
+ </div>
+ <div class="slide-no">02 — 09</div>
+</section>
+
+<!-- ===========================================
+     SLIDE 03 — THEY DO NOT CANCEL
+     =========================================== -->
+<section class="slide" data-scene="2">
+ <div class="stage-grid"></div><div class="frame"></div><div class="brand en">RE:ACT</div>
+ <div class="principle">
+  <div class="kicker reveal">THE IMPORTANT DISTINCTION</div>
+  <h1 class="headline reveal d1" data-editable="true" contenteditable="false">متساويتان في المقدار.<br><span class="coral">متعاكستان في الاتجاه.</span></h1>
+  <div class="split reveal d2"><span>FORCE ON A</span><b class="not-equal">≠</b><span>FORCE ON B</span></div>
+  <p class="subline reveal d3" style="margin-top:48px;font-size:28px">لا تلغي إحداهما الأخرى؛ لأنهما لا تؤثران في الجسم نفسه.</p>
+ </div>
+ <div class="slide-no">03 — 09</div>
+</section>
+
+<!-- ===========================================
+     SLIDE 04 — HAND AND WALL
+     =========================================== -->
+<section class="slide" data-scene="3">
+ <div class="stage-grid"></div><div class="frame"></div><div class="brand en">RE:ACT</div>
+ <div class="wall-layout">
+  <div class="wall-art">
+   <div class="wall-block"></div><div class="hand design-target" data-dm-x="0" data-dm-y="0" data-dm-scale="1" data-dm-rotate="7" style="translate: 0px; scale: 1; rotate: 7deg;"></div>
+   <div class="wall-arrow-a"></div><div class="wall-arrow-b"></div>
+   <div class="object-label" style="position:absolute;right:95px;top:520px">الحائط</div>
+   <div class="object-label" style="position:absolute;left:95px;top:360px">اليد</div>
+  </div>
+  <div class="wall-copy">
+   <div class="kicker reveal design-target" data-dm-x="0" data-dm-y="-16" data-dm-scale="1" data-dm-rotate="0" style="translate: 0px -16px; scale: 1; rotate: 0deg;">03 / CONTACT INTERACTION</div>
+   <h1 class="headline reveal d1" data-editable="true" contenteditable="false">ادفع الحائط.</h1>
+   <p class="subline reveal d2">يدك تؤثر في الحائط بقوة، والحائط يؤثر في يدك بقوة مساوية ومعاكسة.</p>
+   <div class="force-pair reveal d3"><div>HAND → WALL</div><div>WALL → HAND</div></div>
+   <p class="micro reveal d4" style="margin-top:34px">وجود قوة رد الفعل لا يتطلب أن يتحرك الحائط.</p>
+  </div>
+ </div>
+ <div class="slide-no">04 — 09</div>
+</section>
+
+<!-- ===========================================
+     SLIDE 05 — GRAVITY IS MUTUAL
+     =========================================== -->
+<section class="slide" data-scene="4">
+ <div class="stage-grid"></div><div class="frame"></div><div class="brand en">RE:ACT</div>
+ <div class="gravity-layout">
+  <div class="gravity-head">
+   <div class="kicker reveal">04 / GRAVITATIONAL INTERACTION</div>
+   <h1 class="headline reveal d1" data-editable="true" contenteditable="false">الجاذبية<br><span class="coral">تجاذب متبادل.</span></h1>
+   <p class="subline reveal d2" style="font-size:27px">كل جسم يجذب الآخر.</p>
+  </div>
+  <svg class="gravity-svg design-target" viewBox="0 0 1150 760" role="img" aria-label="الأرض والكرة تؤثر كل منهما في الأخرى بقوتين متساويتين ومتعاكستين" data-dm-x="0" data-dm-y="0" data-dm-scale="1" data-dm-rotate="0">
+   <defs><marker id="arrCoral" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto"><path d="M0 0 L12 6 L0 12 Z" fill="#FF6B5A"></path></marker></defs>
+   <circle cx="250" cy="430" r="170" fill="none" stroke="#B8F2E6" stroke-width="5"></circle>
+   <path d="M120 405 Q205 290 320 370 T380 470 M140 500 Q250 560 365 470 M180 280 Q245 390 340 300" fill="none" stroke="#B8F2E6" stroke-width="3" opacity=".6"></path>
+   <circle cx="850" cy="220" r="48" fill="none" stroke="#B8F2E6" stroke-width="5"></circle>
+   <path d="M405 430 L760 255" stroke="#FF6B5A" stroke-width="8" stroke-linecap="round" marker-end="url(#arrCoral)" class="design-target" data-dm-x="-44" data-dm-y="28" data-dm-scale="1.05" data-dm-rotate="5" style="translate: -44px 28px; scale: 1.05; rotate: 5deg;"></path>
+   <path d="M760 280 L405 455" stroke="#FF6B5A" stroke-width="8" stroke-linecap="round" marker-end="url(#arrCoral)" class="design-target" data-dm-x="78" data-dm-y="-96" data-dm-scale="1" data-dm-rotate="4" style="translate: 78px -96px; scale: 1; rotate: 4deg;"></path>
+   <text x="250" y="655" text-anchor="middle" class="object-label">الأرض</text>
+   <text x="850" y="125" text-anchor="middle" class="object-label">الكرة</text>
+   <text x="610" y="260" class="force-label design-target" text-anchor="middle" data-dm-x="0" data-dm-y="0" data-dm-scale="1" data-dm-rotate="0" style="font-family: &quot;IBM Plex Sans Arabic&quot;, sans-serif; font-size: 33px; line-height: 1.2; letter-spacing: 0.06em;">F الكرة على الأرض</text>
+   <text x="580" y="520" class="force-label design-target" text-anchor="middle" data-dm-x="0" data-dm-y="0" data-dm-scale="1" data-dm-rotate="0" style="translate: 0px; scale: 1; rotate: 0deg; font-family: &quot;IBM Plex Sans Arabic&quot;, sans-serif; font-size: 32px; line-height: 1.2; letter-spacing: 0.06em;">F الأرض على الكرة</text>
+   <text x="575" y="700" text-anchor="middle" fill="#B8F2E6" opacity=".55" font-size="18">رسم توضيحي — ليس مقياساً حقيقياً للأحجام أو المسافات</text>
+  </svg>
+  <div class="gravity-note reveal d3 design-target" data-dm-x="0" data-dm-y="0" data-dm-scale="1" data-dm-rotate="0" style="translate: 0px; scale: 1; rotate: 0deg; font-family: Eight, sans-serif; font-size: 37px; line-height: 1.7; letter-spacing: 0em;">القوتان <strong>متساويتان بالمقدار</strong> ومتعاكستان بالاتجاه، لكن كل قوة تؤثر في جسم مختلف.</div>
+ </div>
+ <div class="slide-no">05 — 09</div>
+</section>
+
+<!-- ===========================================
+     SLIDE 06 — SAME FORCE, DIFFERENT ACCELERATION
+     =========================================== -->
+<section class="slide" data-scene="4">
+ <div class="stage-grid"></div><div class="frame"></div><div class="brand en">RE:ACT</div>
+ <div class="accel-layout">
+  <div class="accel-copy">
+   <div class="kicker reveal design-target" data-dm-x="0" data-dm-y="-18" data-dm-scale="1" data-dm-rotate="0" style="translate: 0px -18px; scale: 1; rotate: 0deg;">THE KEY TO THE PARADOX</div>
+   <h1 class="headline reveal d1" data-editable="true" contenteditable="false">القوة نفسها…<br><span class="coral">تسارع مختلف.</span></h1>
+   <p class="subline reveal d2">القوة المتساوية لا تعني تسارعاً متساوياً.</p>
+   <div class="mass-compare reveal d3">
+    <div class="mass-item"><div class="mass-ball"></div><span>كتلة صغيرة</span></div>
+    <div class="mass-item"><div class="mass-earth"></div><span>كتلة هائلة</span></div>
+   </div>
+  </div>
+  <div class="equation-block">
+   <div class="eyebrow en reveal">NEWTON'S SECOND LAW</div>
+   <div class="equation reveal d1">a = <span class="frac"><i>F</i><i>m</i></span></div>
+   <p class="subline reveal d2" style="text-align:center;font-size:27px">التسارع = القوة ÷ الكتلة</p>
+   <div class="rule reveal d3" style="margin:48px auto;width:280px"></div>
+   <p class="subline reveal d4" style="text-align:center;font-size:26px">كلما زادت الكتلة، قلّ التسارع الناتج عن القوة نفسها.</p>
+  </div>
+ </div>
+ <div class="slide-no">06 — 09</div>
+</section>
+
+<!-- ===========================================
+     SLIDE 07 — EARTH MOVES TOO
+     =========================================== -->
+<section class="slide" data-scene="4">
+ <div class="stage-grid"></div><div class="frame"></div><div class="brand en">RE:ACT</div>
+ <div class="motion-layout">
+  <div>
+   <div class="kicker reveal design-target" data-dm-x="0" data-dm-y="-46" data-dm-scale="1" data-dm-rotate="0" style="translate: 0px -46px; scale: 1; rotate: 0deg;">SO WHY DON'T WE NOTICE?</div>
+   <h1 class="headline reveal d1" data-editable="true" contenteditable="false">الأرض تتحرك فعلاً.</h1>
+   <p class="subline reveal d2">لكن كتلتها أكبر بكثير من كتلة الكرة؛ لذلك يكون تسارعها صغيراً للغاية.</p>
+   <p class="eyebrow reveal d3" style="margin-top:38px">ليست ساكنة — حركتها فقط ضئيلة جداً.</p>
+  </div>
+  <div class="motion-track reveal d2">
+   <div class="earth-mini design-target" data-dm-x="0" data-dm-y="0" data-dm-scale="1" data-dm-rotate="0">EARTH</div><div class="ball-mini"></div>
+   <div class="tiny-motion design-target" data-dm-x="156" data-dm-y="-184" data-dm-scale="2.5" data-dm-rotate="180" style="translate: 156px -184px; scale: 2.5; rotate: 180deg;"></div><div class="ball-motion"></div>
+   <div class="motion-caption">حركة الأرض مرسومة بشكل مبالغ فيه للتوضيح فقط</div>
+  </div>
+ </div>
+ <div class="slide-no">07 — 09</div>
+</section>
+
+<!-- ===========================================
+     SLIDE 08 — RETURN TO THE OPENING
+     =========================================== -->
+<section class="slide" data-scene="5">
+ <div class="stage-grid"></div><div class="frame"></div><div class="brand en">RE:ACT</div>
+ <div class="return-layout">
+  <div class="return-copy">
+   <div class="kicker reveal">05 / BACK TO THE BEGINNING</div>
+   <h1 class="headline reveal d1 design-target" data-editable="true" contenteditable="false" data-dm-x="0" data-dm-y="0" data-dm-scale="1" data-dm-rotate="0">عندما تقفز…<br><span class="coral">تدفع الأرض أيضاً.</span></h1>
+   <p class="subline reveal d2">وتكتسب الأرض تسارعاً صغيراً جداً، تماماً كما تقتضي قوانين الحركة.</p>
+  </div>
+  <div class="jump-return reveal d2">
+   <div class="return-arc design-target" data-dm-x="0" data-dm-y="0" data-dm-scale="1" data-dm-rotate="0"></div><div class="return-ground"></div><div class="return-person design-target" style="" data-dm-x="0" data-dm-y="0" data-dm-scale="1" data-dm-rotate="0"></div>
+   <div class="force-caption" style="left:210px;bottom:240px">↓ F</div>
+   <div class="force-caption" style="left:500px;bottom:150px">↑ F</div>
+  </div>
+  <p class="big-question reveal d3 design-target" data-dm-x="0" data-dm-y="0" data-dm-scale="1.4" data-dm-rotate="0" style="font-family: &quot;IBM Plex Sans Arabic&quot;, sans-serif; font-size: 50px; line-height: 1.4; letter-spacing: 0.205em; translate: 0px; scale: 1.4; rotate: 0deg;">فماذا لو قفز مليارات البشر في اللحظة نفسها؟</p>
+ </div>
+ <div class="slide-no">08 — 09</div>
+</section>
+
+<!-- ===========================================
+     SLIDE 09 — THANK YOU & SOURCES
+     =========================================== -->
+<section class="slide active visible" data-scene="6">
+ <div class="stage-grid"></div><div class="frame"></div><div class="brand en">RE:ACT</div>
+ <div class="close-layout">
+  <div class="close-thanks">
+   <div class="kicker reveal design-target" data-dm-x="0" data-dm-y="-10" data-dm-scale="1" data-dm-rotate="0" style="translate: 0px -10px; scale: 1; rotate: 0deg;">END OF PRESENTATION</div>
+   <h1 class="headline reveal d1" data-editable="true" contenteditable="false">شكراً<br><span class="coral">لحسن استماعكم.</span></h1>
+   <p class="subline reveal d2 en">Thank you for your attention.</p>
+   <div class="eyebrow en reveal d3" style="margin-top:70px">ACTION ↔ REACTION</div>
+  </div>
+  <div class="sources reveal d2">
+   <h2>المصادر العلمية</h2>
+   <div class="source-label">OPENSTAX — NEWTON'S THIRD LAW</div>
+   <a href="https://openstax.org/books/physics/pages/4-4-newtons-third-law-of-motion" target="_blank" rel="noopener">Newton's Third Law of Motion</a>
+   <div class="source-label">OPENSTAX — UNIVERSAL GRAVITATION</div>
+   <a href="https://openstax.org/books/university-physics-volume-1/pages/13-1-newtons-law-of-universal-gravitation" target="_blank" rel="noopener">Newton's Law of Universal Gravitation</a>
+   <div class="source-label">OPENSTAX — NEWTON'S SECOND LAW</div>
+   <a href="https://openstax.org/books/physics/pages/4-3-newtons-second-law-of-motion" target="_blank" rel="noopener">Newton's Second Law of Motion</a>
+   <div class="source-label">OPENSTAX — APPLICATIONS</div>
+   <a href="https://openstax.org/books/college-physics-ap-courses/pages/4-4-newtons-third-law-of-motion-symmetry-in-forces" target="_blank" rel="noopener">Applications of Newton's Third Law</a>
+   <div class="source-label" style="margin-top:18px">ADDITIONAL REFERENCES</div>
+   <p style="font-size:19px;line-height:1.8">Khan Academy — Newton's Laws<br>UCLA Physics — Newton's Third Law</p>
+  </div>
+ </div>
+ <div class="slide-no">09 — 09</div>
+</section>
+</main>
+</div>
+
+<!-- Presenter notes: hidden from the audience unless N is pressed. -->
+<aside class="notes-panel" id="notesPanel" aria-live="polite">
+ <div class="notes-head"><strong>RE:ACT / PRESENTER NOTES</strong><button class="ctrl-btn" id="closeNotes" aria-label="إغلاق الملاحظات">×</button></div>
+ <div class="eyebrow" id="notesScene" style="margin-bottom:12px">SCENE 06 · 04:35–05:00</div>
+ <div class="notes-text" id="notesText">شكراً لحسن استماعكم.
+
+Thank you for your attention.
+
+المصادر العلمية:
+- OpenStax Physics
+- Khan Academy — Newton's Laws
+- UCLA Physics — Newton's Third Law</div>
+ <div class="notes-foot">N — TOGGLE NOTES · ← / → — NAVIGATE</div>
+</aside>
+
+<div class="deck-controls" aria-label="Presentation controls">
+ <button class="ctrl-btn" id="prev" aria-label="الشريحة السابقة">←</button>
+ <div class="progress"><div class="progress-fill" id="progressFill" style="width: 100%;"></div></div>
+ <div class="counter" id="counter">09 / 09</div>
+ <button class="ctrl-btn" id="next" aria-label="الشريحة التالية">→</button>
+ <button class="ctrl-btn" id="fullscreen" aria-label="ملء الشاشة">⛶</button>
+ <button class="ctrl-btn" id="notes" aria-label="ملاحظات المقدم">N</button>
+</div>
+<div class="hint">← → NAVIGATE&nbsp;&nbsp; SPACE NEXT&nbsp;&nbsp; N NOTES&nbsp;&nbsp; F FULLSCREEN</div>
+<div class="edit-hotzone" id="editHotzone"></div>
+<button class="edit-toggle" id="editToggle">✎ EDIT (E)</button>
+<div class="edit-tools" id="editTools"><button id="saveEdits">SAVE HTML</button><button id="exitEdit">DONE</button></div>
+
+<script>
+/* ===========================================
+   PRESENTER SCRIPT — full approved Arabic narration
+   =========================================== */
+const presenterNotes = [
+ {title:"SCENE 01 · 00:00–00:30",text:"تخيّلوا أنكم واقفين على الأرض، وقررتم تقفزوا.\n\nأنت تدفع الأرض للأسفل، وهي تدفعك للأعلى.\n\nلكن هل تعلم أن الأرض نفسها تتحرك نتيجة هذا التفاعل، حتى لو ما منلاحظ حركتها؟\n\nطيب، كيف يمكن لقوتين متساويتين أن تنتجا حركتين مختلفتين تماماً؟"},
+ {title:"SCENE 02 · 00:30–01:15",text:"هذا هو قانون نيوتن الثالث، والذي ينص على أنه:\n\nلكل قوة يؤثر بها جسم على جسم آخر، قوة مساوية لها بالمقدار، ومعاكسة لها بالاتجاه، يؤثر بها الجسم الآخر على الجسم الأول.\n\nيعني القوى ما بتحدث بالتتابع، بل تحدث معاً، وكل واحدة تؤثر على جسم مختلف؛ ولهذا لا تلغي إحداهما الأخرى."},
+ {title:"SCENE 03 · 01:15–01:55",text:"لما تدفع حائطاً بيدك، أنت تؤثر عليه بقوة، لكنه أيضاً يؤثر على يدك بقوة مساوية ومعاكسة.\n\nالقوتان متساويتان، ومع ذلك أنت تشعر بضغط الحائط على يدك.\n\nوهذا يوضح أن التفاعل ليس من طرف واحد، حتى لو بدا لنا أننا نحن من بدأ الحركة."},
+ {title:"SCENE 04 · 01:55–03:55",text:"وهذا ينطبق حتى على الأجسام التي لا تلامس بعضها.\n\nخلينا نأخذ الكرة والأرض.\n\nالجاذبية هي قوة تجاذب بين الأجسام التي تمتلك كتلة؛ فالأرض تجذب الكرة نحوها، والكرة أيضاً تجذب الأرض نحوها.\n\nوبحسب قانون نيوتن الثالث، القوتان متساويتان بالمقدار ومتعاكستان بالاتجاه.\n\nلكن لماذا تسقط الكرة، بينما لا نلاحظ حركة الأرض؟\n\nلأن القوة نفسها لا تعني التسارع نفسه.\n\nوفق قانون نيوتن الثاني، التسارع يساوي القوة مقسومة على الكتلة.\n\nوبما أن كتلة الأرض أكبر بكثير من كتلة الكرة، فإن تسارعها الناتج عن هذه القوة صغير للغاية، بينما تتسارع الكرة بشكل ملحوظ.\n\nإذن الأرض تتحرك فعلاً نحو الكرة، لكننا لا نلاحظ حركتها."},
+ {title:"SCENE 05 · 03:55–04:35",text:"ونرجع لسؤال البداية...\n\nعندما تقفز، تدفع الأرض للأسفل، وتتلقى منها قوة للأعلى. وأثناء الدفع، الأرض أيضاً تتلقى قوة منك باتجاه الأسفل، وتكتسب تسارعاً صغيراً جداً.\n\nيعني نعم، أنت تؤثر على حركة الأرض، لكن تأثيرك صغير جداً مقارنة بكتلتها.\n\nفإذا كانت قفزة واحدة تحدث هذا التأثير الضئيل...\n\nماذا لو قفز مليارات البشر في اللحظة نفسها؟"},
+ {title:"SCENE 06 · 04:35–05:00",text:"شكراً لحسن استماعكم.\n\nThank you for your attention.\n\nالمصادر العلمية:\n- OpenStax Physics\n- Khan Academy — Newton's Laws\n- UCLA Physics — Newton's Third Law"}
+];
+
+/* ===========================================
+   SLIDE CONTROLLER — fixed 1920×1080 stage
+   =========================================== */
+class SlidePresentation{
+ constructor(){
+  this.slides=[...document.querySelectorAll(".slide")];
+  this.index=0;this.stage=document.getElementById("deckStage");
+  this.notesPanel=document.getElementById("notesPanel");
+  this.setupScale();this.setupNavigation();this.setupTouch();
+  this.show(0);
+ }
+ setupScale(){
+  const scale=()=>{
+   const factor=Math.min(innerWidth/1920,innerHeight/1080);
+   const x=(innerWidth-1920*factor)/2,y=(innerHeight-1080*factor)/2;
+   this.stage.style.transform=`translate(${x}px,${y}px) scale(${factor})`;
+  };
+  scale();addEventListener("resize",scale);
+ }
+ setupNavigation(){
+  document.getElementById("prev").addEventListener("click",()=>this.show(this.index-1));
+  document.getElementById("next").addEventListener("click",()=>this.show(this.index+1));
+  document.getElementById("fullscreen").addEventListener("click",()=>this.toggleFullscreen());
+  document.getElementById("notes").addEventListener("click",()=>this.toggleNotes());
+  document.getElementById("closeNotes").addEventListener("click",()=>this.toggleNotes(false));
+  addEventListener("keydown",e=>{
+   const tag=(e.target.tagName||"").toLowerCase();
+   if(["input","textarea","select"].includes(tag)||e.target.isContentEditable)return;
+   if(e.key==="ArrowRight"||e.key==="PageDown"||e.key===" "){e.preventDefault();this.show(this.index+1)}
+   else if(e.key==="ArrowLeft"||e.key==="PageUp"){e.preventDefault();this.show(this.index-1)}
+   else if(e.key==="Home"){this.show(0)}
+   else if(e.key==="End"){this.show(this.slides.length-1)}
+   else if(e.key.toLowerCase()==="n"){this.toggleNotes()}
+   else if(e.key.toLowerCase()==="f"){this.toggleFullscreen()}
+   else if(e.key.toLowerCase()==="e"){toggleEdit()}
+   else if(e.key==="Escape"){this.toggleNotes(false)}
+  });
+ }
+ setupTouch(){
+  let startX=0,startY=0;
+  this.stage.addEventListener("touchstart",e=>{startX=e.changedTouches[0].clientX;startY=e.changedTouches[0].clientY},{passive:true});
+  this.stage.addEventListener("touchend",e=>{
+   const dx=e.changedTouches[0].clientX-startX,dy=e.changedTouches[0].clientY-startY;
+   if(Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.25)this.show(this.index+(dx<0?1:-1));
+  },{passive:true});
+ }
+ show(i){
+  this.index=Math.max(0,Math.min(i,this.slides.length-1));
+  this.slides.forEach((s,n)=>{s.classList.toggle("active",n===this.index);s.classList.toggle("visible",n===this.index)});
+  document.getElementById("counter").textContent=`${String(this.index+1).padStart(2,"0")} / ${String(this.slides.length).padStart(2,"0")}`;
+  document.getElementById("progressFill").style.width=`${(this.index+1)/this.slides.length*100}%`;
+  const scene=Number(this.slides[this.index].dataset.scene)-1;
+  document.getElementById("notesScene").textContent=presenterNotes[scene].title;
+  document.getElementById("notesText").textContent=presenterNotes[scene].text;
+ }
+ toggleNotes(force){
+  const open=typeof force==="boolean"?force:!this.notesPanel.classList.contains("open");
+  this.notesPanel.classList.toggle("open",open);
+ }
+ async toggleFullscreen(){
+  try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){console.warn("Fullscreen unavailable",e)}
+ }
+}
+const deck=new SlidePresentation();
+
+/* ===========================================
+   INLINE EDITING — E toggles, edits persist locally
+   =========================================== */
+const editToggle=document.getElementById("editToggle");
+const hotzone=document.getElementById("editHotzone");
+let editTimer;
+hotzone.addEventListener("mouseenter",()=>{clearTimeout(editTimer);editTimer=setTimeout(()=>editToggle.classList.add("show"),350)});
+hotzone.addEventListener("mouseleave",()=>{editTimer=setTimeout(()=>editToggle.classList.remove("show"),450)});
+editToggle.addEventListener("mouseenter",()=>clearTimeout(editTimer));
+editToggle.addEventListener("mouseleave",()=>{editTimer=setTimeout(()=>editToggle.classList.remove("show"),450)});
+function toggleEdit(force){
+ const on=typeof force==="boolean"?force:!document.body.classList.contains("editing");
+ document.body.classList.toggle("editing",on);
+ document.querySelectorAll('[data-editable="true"]').forEach(el=>el.contentEditable=on?"true":"false");
+ editToggle.classList.toggle("show",on);
+}
+editToggle.addEventListener("click",()=>toggleEdit(true));
+document.getElementById("exitEdit").addEventListener("click",()=>toggleEdit(false));
+document.getElementById("saveEdits").addEventListener("click",()=>{
+ const clone=document.documentElement.cloneNode(true);
+ clone.querySelectorAll('[contenteditable="true"]').forEach(el=>el.removeAttribute("contenteditable"));
+ clone.querySelectorAll(".editing").forEach(el=>el.classList.remove("editing"));
+ const output="<!DOCTYPE html>\n"+clone.outerHTML;
+ const blob=new Blob([output],{type:"text/html;charset=utf-8"});
+ const url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download="REACT-edited.html";a.click();URL.revokeObjectURL(url);
+});
+
+/* =========================================================
+   ADD-ON ONLY: RE:ACT DESIGN MODE CONTROLLER
+   - Click any visible text or supported graphic to select it.
+   - Typography and geometry controls only change the selected node.
+   - Original slide markup, narration, and navigation are retained.
+   ========================================================= */
+document.addEventListener("DOMContentLoaded", () => {
+ const launch = document.getElementById("designLaunch");
+ const panel = document.getElementById("designPanel");
+ const stage = document.getElementById("deckStage");
+ const status = document.getElementById("designStatus");
+ const textControls = document.getElementById("designTextControls");
+ const textHint = document.getElementById("designTextHint");
+ const root = document.documentElement;
+ let selected = null;
+ let designOn = false;
+
+ const $ = id => document.getElementById(id);
+ const textSelector = [
+  "h1","h2","h3","p","a",".kicker",".eyebrow",".force-caption",
+  ".slide-no",".brand",".law-caption",".object-label",".micro",
+  ".source-label",".gravity-note",".question",".subline"
+ ].join(",");
+ const graphicSelector = [
+  ".person",".person-head",".person-body",".person-arm",".person-leg",
+  ".ground",".jump-arc",".jump-shadow",".ground-force",".person-force",
+  ".wall-block",".hand",".wall-arrow-a",".wall-arrow-b",
+  ".law-body",".law-arrow",".mass-ball",".mass-earth",
+  ".earth-mini",".ball-mini",".tiny-motion",".ball-motion",
+  ".return-arc",".return-ground",".return-person",
+  "svg","svg circle","svg path","svg line","svg rect","svg ellipse",
+  "svg text","svg polygon","svg polyline"
+ ].join(",");
+ const targetSelector = textSelector + "," + graphicSelector;
+
+ const setOutput = (id, value) => { $(id).textContent = value; };
+ const isText = el => el.matches(textSelector) || el.tagName.toLowerCase() === "text";
+
+ function nameOf(el) {
+  const tag = el.tagName.toLowerCase();
+  const cls = typeof el.className === "string" ? el.className.trim().split(/\s+/)[0] : "";
+  const raw = (el.innerText || el.textContent || "").replace(/\s+/g," ").trim();
+  const label = raw ? ` · ${raw.slice(0,36)}${raw.length>36?"…":""}` : "";
+  return `${tag}${cls ? "."+cls : ""}${label}`;
+ }
+
+ function getNumber(value, fallback=0) {
+  const n = parseFloat(value);
+  return Number.isFinite(n) ? n : fallback;
+ }
+
+ function markTarget(el) {
+  if (selected) selected.classList.remove("design-selected");
+  selected = el;
+  if (!selected) return;
+  selected.classList.add("design-selected");
+  selected.classList.add("design-target");
+  if (!selected.hasAttribute("data-dm-origin-style")) {
+   selected.setAttribute("data-dm-origin-style",
+    selected.hasAttribute("style") ? selected.getAttribute("style") : "__NO_INLINE_STYLE__");
+  }
+  if (selected.dataset.dmX === undefined) selected.dataset.dmX = "0";
+  if (selected.dataset.dmY === undefined) selected.dataset.dmY = "0";
+  if (selected.dataset.dmScale === undefined) selected.dataset.dmScale = "1";
+  if (selected.dataset.dmRotate === undefined) selected.dataset.dmRotate = "0";
+
+  const text = isText(selected);
+  textControls.hidden = !text;
+  textHint.hidden = text;
+  status.textContent = (text ? "نص محدد: " : "عنصر رسومي محدد: ") + nameOf(selected);
+  const computed = getComputedStyle(selected);
+
+  if (text) {
+   $("selectedFont").value = closestFontOption(computed.fontFamily);
+   $("fontSize").value = String(Math.max(10,Math.min(180,getNumber(computed.fontSize,40))));
+   const lh = computed.lineHeight === "normal" ? 1.2 :
+     getNumber(computed.lineHeight,20) / Math.max(1,getNumber(computed.fontSize,16));
+   $("lineHeight").value = String(Math.max(.8,Math.min(2.4,lh)));
+   const ls = computed.letterSpacing === "normal" ? 0 :
+     getNumber(computed.letterSpacing,0) / Math.max(1,getNumber(computed.fontSize,16));
+   $("letterSpacing").value = String(Math.max(-.08,Math.min(.25,ls)));
+   refreshTypographyOutputs();
+  }
+  $("offsetX").value = selected.dataset.dmX;
+  $("offsetY").value = selected.dataset.dmY;
+  $("elementScale").value = selected.dataset.dmScale;
+  $("elementRotate").value = selected.dataset.dmRotate;
+  refreshGeometryOutputs();
+ }
+
+ function closestFontOption(fontFamily) {
+  const list = ["Eight","IBM Plex Sans Arabic","Space Grotesk","Arial","Tahoma","Georgia"];
+  const found = list.find(font => fontFamily.toLowerCase().includes(font.toLowerCase()));
+  return found || (isLikelyArabic(selected) ? "IBM Plex Sans Arabic" : "Space Grotesk");
+ }
+ function isLikelyArabic(el) {
+  const text = el.innerText || el.textContent || "";
+  return /[\u0600-\u06FF]/.test(text) || getComputedStyle(el).direction === "rtl";
+ }
+
+ function refreshTypographyOutputs() {
+  setOutput("fontSizeOut", `${$("fontSize").value} px`);
+  setOutput("lineHeightOut", Number($("lineHeight").value).toFixed(2));
+  setOutput("letterSpacingOut", `${Number($("letterSpacing").value).toFixed(3)} em`);
+ }
+ function refreshGeometryOutputs() {
+  setOutput("offsetXOut", `${$("offsetX").value} px`);
+  setOutput("offsetYOut", `${$("offsetY").value} px`);
+  setOutput("elementScaleOut", `${Number($("elementScale").value).toFixed(2)}×`);
+  setOutput("elementRotateOut", `${$("elementRotate").value}°`);
+ }
+
+ function applyTypography() {
+  if (!selected || !isText(selected)) return;
+  selected.style.fontFamily = `"${$("selectedFont").value}", sans-serif`;
+  selected.style.fontSize = `${$("fontSize").value}px`;
+  selected.style.lineHeight = $("lineHeight").value;
+  selected.style.letterSpacing = `${$("letterSpacing").value}em`;
+  refreshTypographyOutputs();
+ }
+
+ function applyGeometry() {
+  if (!selected) return;
+  const x = Number($("offsetX").value);
+  const y = Number($("offsetY").value);
+  const scale = Number($("elementScale").value);
+  const rotate = Number($("elementRotate").value);
+  selected.dataset.dmX = String(x);
+  selected.dataset.dmY = String(y);
+  selected.dataset.dmScale = String(scale);
+  selected.dataset.dmRotate = String(rotate);
+  /* Individual transform properties preserve any original transform
+     already used by CSS (for example, the angled hand illustration). */
+  selected.style.translate = `${x}px ${y}px`;
+  selected.style.scale = String(scale);
+  selected.style.rotate = `${rotate}deg`;
+  refreshGeometryOutputs();
+ }
+
+ function enterDesignMode(force) {
+  designOn = typeof force === "boolean" ? force : !designOn;
+  document.body.classList.toggle("design-mode",designOn);
+  launch.setAttribute("aria-pressed",String(designOn));
+  if (designOn) {
+   if (typeof toggleEdit === "function") toggleEdit(false);
+   status.textContent = "اضغط على أي نص أو رسم داخل الشريحة لتحديده.";
+  } else {
+   if (selected) selected.classList.remove("design-selected");
+   selected = null;
+   status.textContent = "تم إغلاق وضع التصميم.";
+  }
+ }
+ launch.addEventListener("click",()=>enterDesignMode());
+ $("designClose").addEventListener("click",()=>enterDesignMode(false));
+ $("exitDesign").addEventListener("click",()=>enterDesignMode(false));
+
+ stage.addEventListener("click",event=>{
+  if (!designOn) return;
+  const slide = event.target.closest(".slide");
+  if (!slide || !slide.classList.contains("active")) return;
+  const target = event.target.closest(targetSelector);
+  if (!target || !slide.contains(target)) {
+   if (selected) selected.classList.remove("design-selected");
+   selected = null;
+   status.textContent = "لم يتم تحديد عنصر. اضغط مباشرة على نص أو رسم.";
+   textControls.hidden = true; textHint.hidden = false;
+   return;
+  }
+  event.preventDefault();
+  event.stopPropagation();
+  markTarget(target);
+ },true);
+
+ $("selectedFont").addEventListener("change",applyTypography);
+ ["fontSize","lineHeight","letterSpacing"].forEach(id => $(id).addEventListener("input",applyTypography));
+ ["offsetX","offsetY","elementScale","elementRotate"].forEach(id => $(id).addEventListener("input",applyGeometry));
+
+ $("globalArabicFont").addEventListener("change",event=>{
+  root.style.setProperty("--font-ar",`"${event.target.value}",sans-serif`);
+ });
+ $("globalEnglishFont").addEventListener("change",event=>{
+  root.style.setProperty("--font-en",`"${event.target.value}",sans-serif`);
+ });
+
+ $("resetSelected").addEventListener("click",()=>{
+  if (!selected) {status.textContent="حدد عنصراً أولاً.";return;}
+  const original = selected.getAttribute("data-dm-origin-style");
+  if (original === "__NO_INLINE_STYLE__") selected.removeAttribute("style");
+  else if (original !== null) selected.setAttribute("style",original);
+  ["dmX","dmY","dmScale","dmRotate"].forEach(k=>delete selected.dataset[k]);
+  selected.classList.remove("design-selected");
+  const old = selected; selected = null;
+  markTarget(old);
+  status.textContent = "أُعيد العنصر المحدد إلى تنسيقه الأصلي.";
+ });
+
+ $("saveDesign").addEventListener("click",()=>{
+  const clone = document.documentElement.cloneNode(true);
+  clone.classList.remove("design-mode");
+  clone.querySelectorAll(".design-selected").forEach(el=>el.classList.remove("design-selected"));
+  clone.querySelectorAll("[contenteditable='true']").forEach(el=>el.removeAttribute("contenteditable"));
+  clone.querySelectorAll("[data-dm-origin-style]").forEach(el=>el.removeAttribute("data-dm-origin-style"));
+  clone.querySelectorAll(".design-panel").forEach(el=>el.classList.remove("open"));
+  const file = "<!DOCTYPE html>\n" + clone.outerHTML;
+  const blob = new Blob([file],{type:"text/html;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "REACT-customized.html";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  status.textContent = "تم إنشاء نسخة HTML جديدة بالتعديلات الحالية.";
+ });
+
+ addEventListener("keydown",event=>{
+  if (event.target.closest && event.target.closest(".design-panel")) {
+   if (event.key === "Escape") {event.preventDefault();enterDesignMode(false);}
+   return;
+  }
+  if (event.key.toLowerCase() === "d" && !event.ctrlKey && !event.metaKey && !event.altKey) {
+   event.preventDefault(); enterDesignMode();
+  }
+ });
+});
+
+</script>
+
+<!-- ADD-ON ONLY: RE:ACT DESIGN MODE PANEL -->
+<button class="design-launch" id="designLaunch" type="button" aria-label="فتح وضع التصميم" aria-pressed="true">✦ DESIGN MODE</button>
+<aside class="design-panel" id="designPanel" aria-label="لوحة تعديل التصميم">
+ <div class="design-head">
+  <div>
+   <strong>RE:ACT / DESIGN MODE</strong>
+   <div class="design-subtitle">تعديل الخطوط والرسومات والمسافات</div>
+  </div>
+  <button class="design-close" id="designClose" type="button" aria-label="إغلاق">×</button>
+ </div>
+ <div class="design-status" id="designStatus">نص محدد: div.kicker · END OF PRESENTATION</div>
+
+ <div class="design-section">
+  <div class="design-section-title">الخطوط العامة · GLOBAL FONTS</div>
+  <div class="design-field design-font-controls">
+   <label for="globalArabicFont">الخط العربي</label>
+   <select id="globalArabicFont">
+    <option value="Eight">Eight (إذا كان مثبتاً)</option>
+    <option value="IBM Plex Sans Arabic" selected="">IBM Plex Sans Arabic</option>
+    <option value="Arial">Arial</option>
+    <option value="Tahoma">Tahoma</option>
+   </select>
+  </div>
+  <div class="design-field design-font-controls">
+   <label for="globalEnglishFont">الخط الإنجليزي</label>
+   <select id="globalEnglishFont">
+    <option value="Space Grotesk" selected="">Space Grotesk</option>
+    <option value="Arial">Arial</option>
+    <option value="Georgia">Georgia</option>
+   </select>
+  </div>
+ </div>
+
+ <div class="design-section">
+  <div class="design-section-title">النص المحدد · TYPOGRAPHY</div>
+  <div id="designTextControls" class="design-text-controls">
+   <div class="design-field">
+    <label for="selectedFont">خط العنصر</label>
+    <select id="selectedFont">
+     <option value="Eight">Eight</option>
+     <option value="IBM Plex Sans Arabic">IBM Plex Sans Arabic</option>
+     <option value="Space Grotesk">Space Grotesk</option>
+     <option value="Arial">Arial</option>
+     <option value="Tahoma">Tahoma</option>
+     <option value="Georgia">Georgia</option>
+    </select>
+   </div>
+   <div class="design-field">
+    <label for="fontSize">حجم الخط <output id="fontSizeOut">20 px</output></label>
+    <input id="fontSize" type="range" min="10" max="180" step="1" value="40">
+   </div>
+   <div class="design-field">
+    <label for="lineHeight">تباعد الأسطر <output id="lineHeightOut">1.20</output></label>
+    <input id="lineHeight" type="range" min="0.8" max="2.4" step="0.05" value="1.2">
+   </div>
+   <div class="design-field">
+    <label for="letterSpacing">تباعد الحروف <output id="letterSpacingOut">0.220 em</output></label>
+    <input id="letterSpacing" type="range" min="-0.08" max="0.25" step="0.005" value="0">
+   </div>
+  </div>
+  <div id="designTextHint" class="design-help" hidden="">اضغط على عنوان أو فقرة أو تسمية لتظهر خيارات الخط والحجم والتباعد.</div>
+ </div>
+
+ <div class="design-section">
+  <div class="design-section-title">الموقع والحجم · POSITION &amp; SCALE</div>
+  <div class="design-field">
+   <label for="offsetX">تحريك أفقي <output id="offsetXOut">0 px</output></label>
+   <input id="offsetX" type="range" min="-500" max="500" step="2" value="0">
+  </div>
+  <div class="design-field">
+   <label for="offsetY">تحريك عمودي <output id="offsetYOut">-10 px</output></label>
+   <input id="offsetY" type="range" min="-400" max="400" step="2" value="0">
+  </div>
+  <div class="design-field">
+   <label for="elementScale">تكبير / تصغير <output id="elementScaleOut">1.00×</output></label>
+   <input id="elementScale" type="range" min="0.35" max="2.5" step="0.05" value="1">
+  </div>
+  <div class="design-field">
+   <label for="elementRotate">تدوير <output id="elementRotateOut">0°</output></label>
+   <input id="elementRotate" type="range" min="-180" max="180" step="1" value="0">
+  </div>
+ </div>
+
+ <div class="design-actions">
+  <button id="resetSelected" type="button">إعادة ضبط العنصر</button>
+  <button id="exitDesign" type="button">إنهاء التعديل</button>
+  <button id="saveDesign" class="primary" type="button" style="grid-column:1/-1">حفظ نسخة HTML المعدّلة</button>
+ </div>
+ <div class="design-help">
+  طريقة العمل: اضغط على النص أو الرسم الذي تريد تعديله، ثم حرّك أدوات اللوحة. استخدم زر الحفظ لتنزيل نسخة جديدة مع الاحتفاظ بأدوات التحرير. الاختصار D لفتح/إغلاق وضع التصميم، وEsc للخروج.
+ </div>
+</aside>
+
+
+</body></html>
